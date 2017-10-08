@@ -98,4 +98,7 @@ ENV/
 /site
 
 # mypy
-.mypy_cache/
+:mypy_cache/
+
+# my personal ini, not the config.ini to be included with the repo.
+config.yaml
