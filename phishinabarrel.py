@@ -51,7 +51,8 @@ def safebrowse():
 
 def netcraft():
 
-
+    print '[+] Checking Netcraft submission...'
+    print 
 # Check if phishing - they're pretty specific on what they ask for
     print """
     Is this a phishing url? Is it "one that is attempting to impersonate a
@@ -65,7 +66,7 @@ def netcraft():
 
         # Keep the user informed
         print '[+] Submitting request to Netcraft'
-
+        print '...'
         # Submit the issue to netcraft.
         netcraft_url = "http://toolbar.netcraft.com/report_url"
 
@@ -79,6 +80,7 @@ def netcraft():
         # If we had a successful post, then print the result. If not, I need to
         # write error handling.
         if self.response.status_code == requests.codes.ok:
+            print 'Success! Here is what you got:'
             print r.text
             safebrowse()
         else:
@@ -88,18 +90,24 @@ def netcraft():
 
     elif netcraft_phishing == "no":
         print 'Skipping netcraft submission'
+        print '\n'
         safebrowse()
 
     elif netcraft_phishing == "what":
         print 'Netcraft doesn\'t want you submitting just anything. Make sure'\
             ' it meets their definition'
+        print '\n'
         netcraft()
 
     else:
         print 'I need yes, no, or what please.'
-
+        print '\n'
+        netcraft()
 
 def safebrowse():
+
+    print '[+] Google Safebrowsing'
+    print '\n'
     # This will submit the URL to Google Safe browsing. Since they have Captcha
     # protection on the page, you'll need to manually visit this URL. It should
     # autopopulate what it can through the url.
@@ -108,7 +116,7 @@ def safebrowse():
     print 'Click the URL below, it should autopopulate the fields. Complete '\
         'the captcha and submit to report the site to Google Safe Browsing.'
     print 'https://safebrowsing.google.com/safebrowsing/report_phish/?hl=en&url=' + enc_url + '&dq=' + enc_reason
-
+    print '\n'
 
 netcraft()
 
