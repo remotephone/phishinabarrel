@@ -1,7 +1,4 @@
-netcraft:
-  nc_name: 
-  nc_email:
-phishtank:
-    phishtank_api:
-virustotal:
-    vt_apikey:
+nc_name: 
+nc_email:
+phishtank_api:
+vt_apikey:
