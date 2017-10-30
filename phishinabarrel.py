@@ -17,40 +17,29 @@ import urllib
 
 # Config and input handlers
 from sys import argv
-import yaml
 from xml.etree import ElementTree
+import argparse
+from config import cfg
+import time
 
 
-"""
-def main():
-
-    # Ask user for URL and reason for submitting it to netcraft.
-    # To see their form, go to http://toolbar.netcraft.com/report_url
-    prompt = "> "
-    print "What URL do you want to report? Include the protocol (http[s]://)"
-    check_url = raw_input(prompt)
-    print "Why are you reporting this URL - keep it to one word"
-    check_reason = raw_input(prompt)
-    print get_config(cfg['netcraft']['nc_name'])
-"""
 
 # Pull the config from config.yaml. This file includes API keys and form
 # fields.
-with open("config.yaml", 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
 
-# Ask user for URL and reason for submitting it to netcraft.
-# To see their form, go to http://toolbar.netcraft.com/report_url
-prompt = "> "
-print "What URL do you want to report? Include the protocol (http[s]://)"
-check_url = raw_input(prompt)
-print "Why are you reporting this URL - keep it to one word"
-check_reason = raw_input(prompt)
+# Parse any command line arguments, if none ask user for URL.
+url_parser = argparse.ArgumentParser()
+url_parser.add_argument("-u", "--url", dest='check_url', help='This is the URL \
+        you will evaluate. This is required.')
+args = url_parser.parse_args()
+if (args.check_url == None):
+    url_parser.print_help()
+else:
+    print "Why are you reporting this URL - keep it to one word"
+    prompt = "> "
+    check_reason = raw_input(prompt)
 
 
-
-# This part will check the URL against VirusTotal. Make sure you have your API
-# key in the config.yaml file for this to work. 
 
 def virus_total():
 
@@ -64,17 +53,35 @@ def virus_total():
 
 # Inform the user and query Virus Total
 
-        print '[+] Checking Virustotal URL reputation...'
-        vt_params = {'apikey': cfg['virustotal']['vt_apikey'], 'url': check_url}
-        vt_response = requests.post('https://www.virustotal.com/vtapi/v2/url/scan', data=vt_params)
-        vt_json_response = vt_response.json()
+        if cfg.get('vt_apikey') == "":
+            print "You need a VirusTotal API key to proceed. Check your \
+            config"
+        else:
+            print '[+] Checking Virustotal URL reputation...'
+            vt_base = 'https://www.virustotal.com/vtapi/v2/'
+            url_scan_endpt = vt_base + 'url/scan'
+            url_rprt_endpt = vt_base + 'url/report'
+            vt_req_params = {'apikey': cfg.get('vt_apikey'), 'url': args.check_url}
+            print url_scan_endpt
+            vt_req_resp = requests.post('https://www.virustotal.com/vtapi/v2/url/scan', 
+                    data=vt_req_params)
+            vt_json_req_resp = vt_req_resp.json()
+            if vt_json_req_resp['response_code'] == '1':
+                print "Success... give me a second..."
+                time.sleep(5)
+                vt_resp_params =  {'apikey': cfg.get('vt_apikey'), 'resource':
+                        args.check_url}
+                vt_resp_results = requests.post('https://www.virustotal.com/vtapi/v2/url/scan', 
+                        data=vt_resp_params)
+                print vt_resp_results['scans']
+            else:
+                print vt_json_req_resp['verbose_msg']
 
-# Handle No, where the user knows what to do
+# Handle No,+ where the user knows what to do
 
     elif vt_choice.lower() == 'no':
         print "Do you want to just report the url?"
         vt_justrpt = raw_input(vt_decision)
-
         if vt_justrpt.lower() == 'yes':
             # This will direct the user to report functions
             # Currently in the netcraft() function
@@ -86,7 +93,13 @@ def virus_total():
     else:
         vt_checktwice = "Did you accidentally run this?"
         print vt_checktwice
-        
+
+
+
+
+
+
+
 
 
 
@@ -118,7 +131,7 @@ def netcraft():
         # and nc_name and nc_email keys. It also pulls the values you submitted
         # when prompted above.
 
-        payload = {'name': cfg['netcraft']['nc_name'], 'email': cfg['netcraft']['nc_email'], 'url': check_url, 'reason': check_reason}
+        payload = {'name': cfg.get(nc_name), 'email': cfg.get(nc_email), 'url': check_url, 'reason': check_reason}
         r = requests.post(netcraft_url, payload)
 
 
@@ -127,28 +140,37 @@ def netcraft():
         if self.response.status_code == requests.codes.ok:
             print 'Success! Here is what you got:'
             print r.text
-            safebrowse()
-
+            exit()
         else:
             print 'Maybe netcraft is down... skipping...'
-            safebrowse()
-
+            exit()
 
     elif netcraft_phishing == "no":
         print 'Skipping netcraft submission'
         print '\n'
-        safebrowse()
+        exit()
 
     elif netcraft_phishing == "what":
         print 'Netcraft doesn\'t want you submitting just anything. Make sure'\
             ' it meets their definition'
         print '\n'
-        netcraft()
+        exit()
 
     else:
         print 'I need yes, no, or what please.'
         print '\n'
-        netcraft()
+        exit()
+
+
+
+
+
+
+
+
+
+
+
 
 def safebrowse():
 
@@ -164,7 +186,23 @@ def safebrowse():
     print 'https://safebrowsing.google.com/safebrowsing/report_phish/?hl=en&url=' + enc_url + '&dq=' + enc_reason
     print '\n'
 
-netcraft()
+
+
+
+
+
+
+
+
+
+
+def main():
+# Can i make this a function taht just tries and moves on if i get a fail?
+        virus_total()
+
+
+if __name__ == "__main__":
+    main()
 
 """
 
