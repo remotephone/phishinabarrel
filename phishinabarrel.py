@@ -31,25 +31,34 @@ import time
 url_parser = argparse.ArgumentParser()
 url_parser.add_argument("-u", "--url", dest='check_url', help='This is the URL \
         you will evaluate. This is required.')
+url_parser.add_argument("-r", "--reputation", dest='repcheck',
+        action='store_true', help='This will check VirusTotal for the reputation\
+        of the URL. You need an api key in the config.yaml file.')
+url_parser.add_argument("-e", "--easy", dest='easymode', action='store_true', \
+        help="Easy mode - report only to services that don\'t require manual \
+        interaction")
 args = url_parser.parse_args()
 if (args.check_url == None):
     url_parser.print_help()
+
 else:
+    check_reason = "phishing"
+
+"""
+originally planned to prompt the user why - but if this is phishing
+reporting only that might be redundant - taking someones advice and setting
+this to phishing alert by default.
+
     print "Why are you reporting this URL - keep it to one word"
     prompt = "> "
     check_reason = raw_input(prompt)
-
-
+"""
 
 def virus_total():
 
 # Make sure the user wants to check URL first, give options to skip and report.
 
-    vt_decision = "yes/no/what: "
-    vt_ask =  "Do you want to check VirusTotal for the URL reputation?"
-    print vt_ask
-    vt_choice = raw_input(vt_decision)
-    if vt_choice.lower() == 'yes':
+    if args.repcheck == True:
 
 # Inform the user and query Virus Total
 
@@ -77,29 +86,9 @@ def virus_total():
             else:
                 print vt_json_req_resp['verbose_msg']
 
-# Handle No,+ where the user knows what to do
-
-    elif vt_choice.lower() == 'no':
-        print "Do you want to just report the url?"
-        vt_justrpt = raw_input(vt_decision)
-        if vt_justrpt.lower() == 'yes':
-            # This will direct the user to report functions
-            # Currently in the netcraft() function
-            netcraft()
-
-        else:
-            print 'Alright, goodbye!'
-
     else:
-        vt_checktwice = "Did you accidentally run this?"
-        print vt_checktwice
-
-
-
-
-
-
-
+        print "[+] Reporting to NetCraft..."
+        netcraft()
 
 
 
@@ -166,12 +155,6 @@ def netcraft():
 
 
 
-
-
-
-
-
-
 def safebrowse():
 
     print '[+] Google Safebrowsing'
@@ -203,39 +186,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-"""
-
-
-def netcraft():
-    # Ask user for URL and reason for submitting it to netcraft.
-    # To see their form, go to http://toolbar.netcraft.com/report_url
-    prompt = "> "
-    print "What URL do you want to report? Include the protocol (http[s]://)"
-    check_url = raw_input(prompt)
-    print "Why are you reporting this URL - keep it to one word"
-    check_reason = raw_input(prompt)
-
-    # Pull the config from config.yaml. This file includes API keys and form
-    # fields.
-    with open("config.yaml", 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
-
-
-    # Submit the issue to netcraft.
-    url = "http://toolbar.netcraft.com/report_url"
-    # Construct your payload. This pulls the value from the netcraft section
-    # and nc_name and nc_email keys. It also pulls the values you submitted
-    # when prompted above.
-    payload = {'name': cfg['netcraft']['nc_name'], 'email': cfg['netcraft']['nc_email'], 'url': check_url, 'reason': check_reason}
-    r = requests.post(url, payload)
-
-    # If we had a successful post, then print the result. If not, I need to
-    # write error handling.
-    if self.response.status_code == requests.codes.ok:
-        print r.text
-
-if __name__ == "__main__":
-    main()
-
-"""
