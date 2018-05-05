@@ -102,3 +102,4 @@ ENV/
 
 # my personal ini, not the config.ini to be included with the repo.
 config.yaml
+!sample_config.yaml
