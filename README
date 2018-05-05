@@ -1,3 +1,3 @@
-#Phishinabarrel
+# Phishinabarrel
 
 This is intended to automate the work described here: https://decentsecurity.com/#/malware-web-and-phishing-investigation/. Some of the pages don't include APIs, some have APIs you have to pay for, and I'm not all about that. Ideally, a responder can put a URL into the script as an argument and both check and submit it as malicious if it fails checks. As of 10.8.17, it's not ready yet, but here's what I got so far. 
