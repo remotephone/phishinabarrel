@@ -30,7 +30,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--url", dest='check_url', help='This is the URL \
             you will evaluate.')
-    parser.add_argument("-w", "--why", dest='check_reason', default='phishing', help='This flag is used to give \
+    parser.add_argument("-w", "--why", default='phishing', help='This flag is used to give \
             Google Safe Browsing a different reason other than phishing (malware?).')
     parser.add_argument("-r", "--reputation", dest='repcheck',
             action='store_true', help='This will check VirusTotal for the reputation\
@@ -52,9 +52,8 @@ def safebrowse(target_url, check_reason):
     protection on the page, you'll need to manually visit this URL. It should
     autopopulate what it can through the url."""
     print('[+] Google Safebrowsing')
-    print('\n')
-    enc_url = urllib.request.pathname2url(target_url)
-    enc_reason = urllib.request.pathname2url(check_reason)
+    enc_url = urllib.parse.quote_plus(target_url)
+    enc_reason = urllib.parse.quote_plus(check_reason)
     print('Click the URL below, it should autopopulate the fields. Complete '\
         'the captcha and submit to report the site to Google Safe Browsing.')
     print('https://safebrowsing.google.com/safebrowsing/report_phish/?hl=en&url=' + enc_url + '&dq=' + enc_reason)
@@ -69,6 +68,8 @@ def main():
     check_reason = args.why
     vt(VTKEY, TARGET_URL)
     safebrowse(TARGET_URL, check_reason)
+
+
 
 
 if __name__ == "__main__":
