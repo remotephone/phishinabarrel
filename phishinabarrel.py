@@ -20,7 +20,7 @@ import requests
 import urllib
 
 from config import cfg
-from vt import virus_total as vt
+from vt import VirusTotal as vt
 
 # Pull the config from config.yaml. This file includes API keys and form
 # fields.
@@ -66,7 +66,18 @@ def main():
     VTKEY = cfg.get('vt_apikey')
     TARGET_URL = args.check_url
     check_reason = args.why
-    vt(VTKEY, TARGET_URL)
+
+    vtcheck = vt(VTKEY, TARGET_URL)
+    report = vtcheck.get_vt()
+    if report['response_code'] == 1:
+        positives = report['positives']
+        results_url = report['permalink']
+        print(str(positives) + " positive matches found. \nSee " + results_url + '\n')
+    else:
+        vtcheck.put_vt()
+        print("waiting a minute...")
+        time.sleep(10)
+        vtcheck.get_vt()
     safebrowse(TARGET_URL, check_reason)
 
 
