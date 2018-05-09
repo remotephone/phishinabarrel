@@ -32,6 +32,14 @@ class VirusTotal():
         r = requests.post(self.vt_rprt, params=self.vt_params)
         json_resp = r.json()
         return json_resp
+
+    def return_rprt(self):
+        r = requests.post(self.vt_rprt, params=self.vt_params)
+        json_resp = r.json()
+        positives = json_resp['positives']
+        results_url = json_resp['permalink']
+        return positives, results_url
+        print(str(positives) + " positive matches found. \nSee " + results_url + '\n')
         #getjson = pp_json(json_resp)
         #print(pretty_json) 
         #return getjson

@@ -21,6 +21,7 @@ import urllib
 
 from config import cfg
 from vt import VirusTotal as vt
+import sb
 
 # Pull the config from config.yaml. This file includes API keys and form
 # fields.
@@ -47,18 +48,6 @@ def parse_args():
     return args
 
 
-def safebrowse(target_url, check_reason):
-    """This will submit the URL to Google Safe browsing. Since they have Captcha
-    protection on the page, you'll need to manually visit this URL. It should
-    autopopulate what it can through the url."""
-    print('[+] Google Safebrowsing')
-    enc_url = urllib.parse.quote_plus(target_url)
-    enc_reason = urllib.parse.quote_plus(check_reason)
-    print('Click the URL below, it should autopopulate the fields. Complete '\
-        'the captcha and submit to report the site to Google Safe Browsing.')
-    print('https://safebrowsing.google.com/safebrowsing/report_phish/?hl=en&url=' + enc_url + '&dq=' + enc_reason)
-    print('\n')
-
 
 
 def main():
@@ -70,15 +59,27 @@ def main():
     vtcheck = vt(VTKEY, TARGET_URL)
     report = vtcheck.get_vt()
     if report['response_code'] == 1:
-        positives = report['positives']
-        results_url = report['permalink']
-        print(str(positives) + " positive matches found. \nSee " + results_url + '\n')
-    else:
+        results = vtcheck.get_vt()
+        print(results.pp_json())
+    elif report['response_code'] == -2:
+        time.sleep(20)
+        results = vtcheck.get_vt()
+        print(results.pp_json())
+
+    elif report['response_code'] == 0:
+        # go back to top
         vtcheck.put_vt()
-        print("waiting a minute...")
-        time.sleep(10)
-        vtcheck.get_vt()
-    safebrowse(TARGET_URL, check_reason)
+        time.sleep(20)
+        results = vtcheck.get_vt()
+        print(results.pp_json())
+        # need to handle this stuff better.
+        # print("waiting a minute...")
+        # time.sleep(10)
+        # vtcheck.get_vt()
+    
+    print('[+] Google Safebrowsing')
+
+    sb.safebrowse(TARGET_URL, check_reason)
 
 
 
