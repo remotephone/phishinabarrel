@@ -17,7 +17,7 @@ import sys
 from xml.etree import ElementTree
 
 import requests
-import urllib
+import json
 
 from config import cfg
 from vt import VirusTotal as vt
@@ -49,7 +49,6 @@ def parse_args():
 
 
 
-
 def main():
     args = parse_args()
     VTKEY = cfg.get('vt_apikey')
@@ -57,26 +56,30 @@ def main():
     check_reason = args.why
 
     vtcheck = vt(VTKEY, TARGET_URL)
-    report = vtcheck.get_vt()
+    report = vtcheck.get_urlvt()
+    positives = []
     if report['response_code'] == 1:
-        results = vtcheck.get_vt()
-        print(results.pp_json())
+        for x in sorted(report.get('scans')):
+            if report['scans'][x].get('detected'):
+                positives.append([x,
+                            'True',
+                            report['scans'][x]['result'] if report['scans'][x]['result'] else ' -- ',
+                            report['scans'][x]['version'] if  'version' in report['scans'][x] and report['scans'][x]['version'] else ' -- ',
+                            report['scans'][x]['update'] if 'update' in report['scans'][x] and report['scans'][x]['update'] else ' -- '
+                            ])
+        print(positives)
     elif report['response_code'] == -2:
-        time.sleep(20)
-        results = vtcheck.get_vt()
-        print(results.pp_json())
-
+        time.sleep(15)
+        report = vtcheck.get_urlvt()
+        print(json.dumps(report, sort_keys=False, indent=4))
     elif report['response_code'] == 0:
-        # go back to top
-        vtcheck.put_vt()
-        time.sleep(20)
-        results = vtcheck.get_vt()
-        print(results.pp_json())
-        # need to handle this stuff better.
-        # print("waiting a minute...")
-        # time.sleep(10)
-        # vtcheck.get_vt()
-    
+        print('not there, putting')
+        vtcheck.put_urlvt()
+        time.sleep(15)
+        report = vtcheck.get_urlvt()
+        print(json.dumps(report, sort_keys=False, indent=4))
+
+
     print('[+] Google Safebrowsing')
 
     sb.safebrowse(TARGET_URL, check_reason)
@@ -86,3 +89,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
