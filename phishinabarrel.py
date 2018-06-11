@@ -58,6 +58,7 @@ def main():
     vtcheck = vt(VTKEY, TARGET_URL)
     report = vtcheck.get_urlvt()
     positives = []
+    print(report)
     if report['response_code'] == 1:
         for x in sorted(report.get('scans')):
             if report['scans'][x].get('detected'):
