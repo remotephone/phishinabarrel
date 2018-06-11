@@ -24,6 +24,10 @@ class VirusTotal():
     def put_urlvt(self):
         vturl = self.urlbase + 'url/scan'
         r = requests.post(vturl, data=self.vt_scanparams, headers=self.headers)
+        while r.status_code == 204:
+            print('Request limit exceeded, waiting...')
+            time.sleep(15)
+            r = requests.get(vturl, params=self.vt_urldata, headers=self.headers)
         response = r.json()
         return response
 
@@ -31,5 +35,9 @@ class VirusTotal():
     def get_urlvt(self):
         vturl = self.urlbase + 'url/report'
         r = requests.get(vturl, params=self.vt_urldata, headers=self.headers)
+        while r.status_code == 204:
+            print('Request limit exceeded, waiting...')
+            time.sleep(15)
+            r = requests.get(vturl, params=self.vt_urldata, headers=self.headers)
         response = r.json()
         return response
